@@ -12,7 +12,7 @@ async function open(width) {
   const page = await browser.newPage({ viewport: { width, height: 900 }, deviceScaleFactor: 1 })
   page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`))
   page.on("console", (m) => m.type() === "error" && errors.push(`console: ${m.text()}`))
-  await page.goto("http://localhost:4321/", { waitUntil: "networkidle" })
+  await page.goto(process.env.URL ?? "http://localhost:4321/", { waitUntil: "networkidle" })
   return page
 }
 const page = await open(1280)

@@ -19,7 +19,7 @@ bun test test/flows.test.js                 # end-to-end flows against psychoscr
 PS=bundle bun test test/flows.test.js       # same flows against the browser bundle
 bun test/browserish.js                      # bundle with setImmediate/Buffer deleted
 bun serve.ts                                # http://localhost:4321
-cd tools && bun browser-check.mjs           # click through every demo in Chrome, screenshots in shots/
+cd tools && bun browser-check.mjs           # click through every demo in Chrome (BROWSER=webkit, URL=<live url>)
 ```
 
 Rebuild the browser bundle after updating `vendor/psychoscript`:
