@@ -1,0 +1,23 @@
+diff --git a/src/runtime/limits.ts b/src/runtime/limits.ts
+index 7f28263..dfe8a15 100644
+--- a/src/runtime/limits.ts
++++ b/src/runtime/limits.ts
+@@ -14,11 +14,14 @@ export const MAX_VALUE_DEPTH = 32
+ 
+ /** Most bits a BigInt may have. Past about a million bits, one multiplication, division or decimal conversion can take tens of milliseconds. */
+ export const MAX_BIGINT_BITS = 1 << 20
+-// Both bounds are made once: negating a million-bit BigInt on every check would copy it each time.
+-const bigintBound = 1n << BigInt(MAX_BIGINT_BITS)
+-const negativeBigintBound = -bigintBound
++// The bound itself (2^MAX_BIGINT_BITS) has one bit too many for JavaScriptCore, which caps BigInts at 2^20 bits and
++// throws while building it, so the check shifts instead of comparing:
++//   0 <= v < 2^B   <=>  v >> B === 0
++//   -2^B < v < 0   <=>  (v - 1) >> B === -1   (v - 1 >= -2^B; >> floors toward -Infinity)
++const bigintBits = BigInt(MAX_BIGINT_BITS)
+ 
+-export const fitsBigIntSize = (value: bigint): boolean => value < bigintBound && value > negativeBigintBound
++export const fitsBigIntSize = (value: bigint): boolean =>
++  value >= 0n ? value >> bigintBits === 0n : (value - 1n) >> bigintBits === -1n
+ 
+ export const checkBigIntSize = (value: bigint): bigint => {
+   if (!fitsBigIntSize(value)) throw rangeError("Maximum BigInt size exceeded")

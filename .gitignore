@@ -1,0 +1,8 @@
+node_modules/
+# psychoscript is cloned here for tests and bundling (see README); the built bundle lives in site/vendor/.
+/vendor/
+# local-only: downloaded style reference, screenshots, early experiments
+/ref/
+/shots/
+/spike/
+.DS_Store

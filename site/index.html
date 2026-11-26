@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wait for me</title>
+    <meta
+      name="description"
+      content="A stateless MCP server that pauses a running program mid-line, hands it to the client inside requestState, and picks it back up on the next request. Built on psychoscript."
+    />
+    <meta name="theme-color" content="#f9eed6" />
+    <link rel="icon" href="art/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Shrikhand&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="modulepreload" href="vendor/psychoscript.js" />
+  </head>
+  <body>
+    <header class="masthead">
+      <svg class="masthead__marble" aria-hidden="true" preserveAspectRatio="none" viewBox="0 0 1200 520">
+        <filter id="melt" x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.0045 0.009" numOctaves="2" seed="7" />
+          <feDisplacementMap in="SourceGraphic" scale="140" />
+        </filter>
+        <g filter="url(#melt)">
+          <rect width="1200" height="520" fill="#f6e3bd" />
+          <g stroke-width="26" fill="none">
+            <path d="M-100 80 Q 300 10 600 90 T 1300 70" stroke="#f9bb2d" />
+            <path d="M-100 140 Q 300 70 600 150 T 1300 130" stroke="#f26a21" />
+            <path d="M-100 200 Q 300 130 600 210 T 1300 190" stroke="#ee5a8f" />
+            <path d="M-100 260 Q 300 190 600 270 T 1300 250" stroke="#1fa7a0" />
+            <path d="M-100 320 Q 300 250 600 330 T 1300 310" stroke="#7b3fa6" />
+            <path d="M-100 380 Q 300 310 600 390 T 1300 370" stroke="#f9bb2d" />
+            <path d="M-100 440 Q 300 370 600 450 T 1300 430" stroke="#f26a21" />
+          </g>
+        </g>
+      </svg>
+      <div class="masthead__sun"></div>
+      <img class="masthead__cloud masthead__cloud--a" src="art/cloud.svg" alt="" width="160" height="80" />
+      <img class="masthead__cloud masthead__cloud--b" src="art/cloud.svg" alt="" width="120" height="60" />
+      <img class="masthead__cloud masthead__cloud--c" src="art/cloud.svg" alt="" width="110" height="55" />
+      <div class="masthead__plate">
+        <p class="kicker">psychoscript × MCP</p>
+        <h1>Wait for me</h1>
+        <p class="subtitle">i took too much MRTR</p>
+      </div>
+      <div class="masthead__drip" aria-hidden="true"></div>
+    </header>
+
+    <main class="essay">
+      <p>
+        My tools aren't guaranteed to cause idempotency. They keep looping and
+        branching, and have more side effects than that weird pill you bought at the convenience store.
+      </p>
+      <p>
+        That's no problem since I started doing what the kids call anomaly flipping. Mixing <a href="https://github.com/anomalyco/psychoscript">psychoscript</a> and <a href="https://modelcontextprotocol.io/seps/2322-MRTR">MRTR</a>.
+        After the first hit you lie frozen, sealed. Waiting to hear the sweet echo of the next request.
+				It beckons:<br> "<em>Wake up! <span class="rewind">rewind</span>."</em>
+      </p>
+
+      <section class="demo" data-demo="mrtr"></section>
+
+      <p class="note">
+        We are only faking the network. PsycoVM and MCP are real and can hurt you.
+      </p>
+
+      <div class="frog" aria-hidden="true"></div>
+      <p class="eyebrow">I was never good at catching</p>
+      <h2>Try Try Again</h2>
+      <p>
+        Your failure might not be exceptional. Why not give it one more go? Here our server rewrites each
+        <code>try</code> so it stops at a checkpoint on the way in. If the matching <code>catch</code> is ever reached,
+        the server doesn't let it run. It returns an elicitation giving you a chance to finally not mess things up this time.
+      </p>
+
+      <section class="demo" data-demo="rewind"></section>
+
+      <div class="frog" aria-hidden="true"></div>
+      <p class="eyebrow">Call into the æther</p>
+      <h2>Live monkey patching</h2>
+      <p>
+        Undefined is just temporary state of being. Who I am to put your code into some ontological box?
+        Alice's program reaches <code>potion("DRINK ME", 150)</code>, and is asked to finally get itself together and provide
+				an <em>implementation</em>. Notice we only have to ask once, which is good; There are so many unbirthdays to check for after all.
+      </p>
+
+      <section class="demo" data-demo="missing"></section>
+
+      <footer class="footer">
+        <img class="footer__sun" src="art/sun.svg" alt="" width="64" height="64" />
+        <p>
+          D.A.R.E. to keep kids off <a href="https://github.com/anomalyco/psychoscript">psychoscript</a>. <br>Some swag stolen from
+          <a href="https://jamesbox.exe.xyz/vmblog/">Pause anywhere</a> and
+          <a href="https://psychoscript.com">psychoscript.com</a>.
+        </p>
+      </footer>
+    </main>
+
+    <script type="module">
+      import "./lib/sky.js"
+      import "./lib/rewind.js"
+      import { mount } from "./lib/demo.js"
+      for (const el of document.querySelectorAll("[data-demo]")) mount(el, el.dataset.demo)
+    </script>
+  </body>
+</html>
