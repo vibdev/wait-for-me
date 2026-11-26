@@ -1,4 +1,4 @@
-// Checks the masthead: the third-eye morph (with View Transitions), clouds on scroll. Needs `bun serve.ts` running.
+// Checks the masthead: the third-eye morph (frames along the way), clouds on scroll. Needs `bun serve.ts` running.
 import { chromium, webkit } from "playwright-core"
 // BROWSER=webkit runs Safari's engine instead of Chrome.
 
@@ -14,21 +14,33 @@ await page.goto("http://localhost:4321/", { waitUntil: "networkidle" })
 
 const sunBox = async () => page.locator(".masthead__sun").boundingBox()
 await page.screenshot({ path: out + "sun-calm.png", clip: { x: 880, y: 0, width: 400, height: 330 } })
-console.log("view transitions:", await page.evaluate(() => typeof document.startViewTransition))
+const name = process.env.BROWSER === "webkit" ? "webkit" : "chrome"
+console.log("scroll-driven clouds:", await page.evaluate(() => CSS.supports("animation-timeline: scroll()")))
 
+const lips = () => page.locator(".sun__lips").getAttribute("d")
+const calmLips = await lips()
 await page.locator(".sun__eye").click({ force: true })
-await page.waitForTimeout(350)
-await page.screenshot({ path: out + "sun-mid.png", clip: { x: 880, y: 0, width: 400, height: 330 } })
-await page.waitForTimeout(1500)
+let waited = 0
+for (const ms of [250, 500, 800, 1100]) {
+  await page.waitForTimeout(ms - waited)
+  waited = ms
+  await page.screenshot({ path: out + `sun-${name}-${ms}.png`, clip: { x: 880, y: 0, width: 400, height: 330 } })
+}
+await page.waitForTimeout(1200)
 console.log("scary:", await page.evaluate(() => document.querySelector(".masthead").classList.contains("is-scary")), "| aria-pressed", await page.locator(".sun__eye").getAttribute("aria-pressed"))
 await page.screenshot({ path: out + "sun-scary-top.png" })
-await page.screenshot({ path: out + "sun-scary.png", clip: { x: 880, y: 0, width: 400, height: 330 } })
+await page.screenshot({ path: out + `sun-${name}-open.png`, clip: { x: 880, y: 0, width: 400, height: 330 } })
+// turn around mid-close, then let it finish opening again
+await page.locator(".sun__eye").click({ force: true })
+await page.waitForTimeout(250)
+await page.locator(".sun__eye").click({ force: true })
+await page.waitForTimeout(1500)
 
 // keyboard closes it
 await page.locator(".sun__eye").focus()
 await page.keyboard.press("Enter")
 await page.waitForTimeout(1200)
-console.log("closed by keyboard:", !(await page.evaluate(() => document.querySelector(".masthead").classList.contains("is-scary"))))
+console.log("closed by keyboard:", !(await page.evaluate(() => document.querySelector(".masthead").classList.contains("is-scary"))), "| back to the same smile:", (await lips()) === calmLips)
 
 // scroll moves clouds
 const cloudX = () => page.locator(".masthead__cloud--a").evaluate((el) => getComputedStyle(el).transform)

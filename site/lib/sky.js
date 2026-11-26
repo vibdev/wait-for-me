@@ -52,7 +52,51 @@ function spiral() {
   return out
 }
 
+// The face is drawn from numbers, so opening the third eye can stretch the calm face into the scary one point by point
+// instead of swapping one picture for another. A mouth is a four-curve blob: corners at cx ± w, its lower edge `bottom`
+// below cy and its upper edge `top` above it (negative `top` dips below cy, which makes a smile). hk and vk are how far
+// the curve handles reach: 0.55 for both draws a circle, vk 0 gives the smile its pointed corners.
+const K = 0.5523
+const FACE = {
+  calm: {
+    brow: [133, 162, 12, 9, 24, 0],
+    lips: [170, 198, 18, -3.5, 8, 0.6, 0],
+    gullet: [170, 199.5, 12, -3, 4.5, 0.6, 0],
+    lipColor: [180, 35, 42],
+  },
+  scary: {
+    brow: [128, 146, 16, 4, 30, 10],
+    lips: [MAW.x, MAW.y, 44, 44, 44, K, K],
+    gullet: [MAW.x, MAW.y, 39, 39, 39, K, K],
+    lipColor: [224, 86, 111],
+  },
+}
+
+function blob([cx, cy, w, top, bottom, hk, vk]) {
+  const [l, r, b, t] = [cx - w, cx + w, cy + bottom, cy - top]
+  return (
+    `M${f(l)} ${f(cy)}` +
+    `C${f(l)} ${f(cy + bottom * vk)} ${f(cx - w * hk)} ${f(b)} ${f(cx)} ${f(b)}` +
+    `C${f(cx + w * hk)} ${f(b)} ${f(r)} ${f(cy + bottom * vk)} ${f(r)} ${f(cy)}` +
+    `C${f(r)} ${f(cy - top * vk)} ${f(cx + w * hk)} ${f(t)} ${f(cx)} ${f(t)}` +
+    `C${f(cx - w * hk)} ${f(t)} ${f(l)} ${f(cy - top * vk)} ${f(l)} ${f(cy)}Z`
+  )
+}
+
+/** Both brows from the left one, mirrored across the sun's middle. */
+const brows = ([x, y, a, b, c, d]) =>
+  `M${f(x)} ${f(y)} q${f(a)} ${f(b)} ${f(c)} ${f(d)} M${f(2 * C - x)} ${f(y)} q${f(-a)} ${f(b)} ${f(-c)} ${f(d)}`
+
+const mix = (a, b, t) => a.map((x, i) => x + (b[i] - x) * t)
+
+function face(t) {
+  const at = (k) => mix(FACE.calm[k], FACE.scary[k], t)
+  const [r, g, b] = at("lipColor").map((x) => Math.round(Math.min(255, Math.max(0, x))))
+  return { brow: brows(at("brow")), lips: blob(at("lips")), gullet: blob(at("gullet")), lipColor: `rgb(${r} ${g} ${b})` }
+}
+
 export function sunMarkup() {
+  const calm = face(0)
   return `<svg viewBox="0 0 340 340" class="sun" aria-hidden="false" role="img" aria-label="A sun">
   <defs>
     <radialGradient id="throat" cx="50%" cy="50%" r="50%">
@@ -61,28 +105,27 @@ export function sunMarkup() {
     <radialGradient id="glow" cx="50%" cy="50%" r="50%">
       <stop offset="0" stop-color="#ee5a8f" stop-opacity=".9"/><stop offset="1" stop-color="#ee5a8f" stop-opacity="0"/>
     </radialGradient>
+    <clipPath id="sun-gullet"><path class="sun__gullet-clip" d="${calm.gullet}"/></clipPath>
   </defs>
   <g class="sun__rays">${rays()}</g>
   <circle cx="170" cy="170" r="78" fill="#f9bb2d" stroke="${INK}" stroke-width="5"/>
   <circle cx="170" cy="170" r="66" fill="#fbc94a"/>
 
-  <g class="sun__calm">
-    <path d="M133 162 q12 9 24 0 M183 162 q12 9 24 0" stroke="${INK}" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <g class="sun__cheeks">
     <circle cx="132" cy="190" r="9" fill="#f26a21" opacity=".35"/><circle cx="208" cy="190" r="9" fill="#f26a21" opacity=".35"/>
-    <path d="M152 198 q18 16 36 0 q-18 7 -36 0 z" fill="#b4232a" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/>
   </g>
+  <g class="sun__squeeze" stroke="${INK}" stroke-width="2.5" fill="none" stroke-linecap="round">
+    <path d="M130 153 q14 2 26 6"/><path d="M210 153 q-14 2 -26 6"/>
+    <path d="M118 140 l-9 -5 M117 149 l-11 0 M120 157 l-9 5"/>
+    <path d="M222 140 l9 -5 M223 149 l11 0 M220 157 l9 5"/>
+    <path d="M156 128 q-4 -6 -10 -8 M184 128 q4 -6 10 -8"/>
+  </g>
+  <path class="sun__brows" d="${calm.brow}" stroke="${INK}" stroke-width="4" fill="none" stroke-linecap="round"/>
 
-  <g class="sun__scary">
-    <g class="sun__squeeze" stroke="${INK}" stroke-width="3.5" fill="none" stroke-linecap="round">
-      <path d="M128 146 q16 4 30 10"/><path d="M212 146 q-16 4 -30 10"/>
-      <path d="M130 153 q14 2 26 6" stroke-width="2.5"/><path d="M210 153 q-14 2 -26 6" stroke-width="2.5"/>
-      <path d="M118 140 l-9 -5 M117 149 l-11 0 M120 157 l-9 5" stroke-width="2.5"/>
-      <path d="M222 140 l9 -5 M223 149 l11 0 M220 157 l9 5" stroke-width="2.5"/>
-      <path d="M156 128 q-4 -6 -10 -8 M184 128 q4 -6 10 -8" stroke-width="2.5"/>
-    </g>
-    <g class="sun__maw">
-      <circle cx="${MAW.x}" cy="${MAW.y}" r="44" fill="#e0566f" stroke="${INK}" stroke-width="4"/>
-      <circle cx="${MAW.x}" cy="${MAW.y}" r="39" fill="#8e1b2b"/>
+  <path class="sun__lips" d="${calm.lips}" fill="${calm.lipColor}" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/>
+  <path class="sun__gullet" d="${calm.gullet}" fill="#8e1b2b"/>
+  <g clip-path="url(#sun-gullet)">
+    <g class="sun__innards">
       <g class="sun__teeth sun__teeth--outer">${teeth(22, 39, 28, "#fffaf0")}</g>
       <circle cx="${MAW.x}" cy="${MAW.y}" r="27" fill="#6d1422" stroke="${INK}" stroke-width="1.5"/>
       <g class="sun__teeth sun__teeth--inner">${teeth(16, 26, 18, "#f6e3bd")}</g>
@@ -100,22 +143,54 @@ export function sunMarkup() {
 </svg>`
 }
 
+// Starts slow, then overshoots a little so the maw gapes past full before it settles. Never dips below 0, where the
+// smile would turn inside out.
+const smooth = (t) => t * t * (3 - 2 * t)
+const gape = (t) => 1 + 2.2 * (smooth(t) - 1) ** 3 + 1.2 * (smooth(t) - 1) ** 2
+
 function mountSun(host) {
   host.innerHTML = sunMarkup()
   const eye = host.querySelector(".sun__eye")
   const masthead = host.closest(".masthead")
+  const parts = Object.fromEntries(
+    ["brows", "lips", "gullet", "gullet-clip"].map((k) => [k, host.querySelector(`.sun__${k}`)]),
+  )
+  const draw = (t) => {
+    const s = face(t)
+    parts.brows.setAttribute("d", s.brow)
+    parts.lips.setAttribute("d", s.lips)
+    parts.lips.setAttribute("fill", s.lipColor)
+    parts.gullet.setAttribute("d", s.gullet)
+    parts["gullet-clip"].setAttribute("d", s.gullet)
+  }
+
+  // t runs 0 (calm) → 1 (scary) and can turn around mid-way: clicking again while it opens closes it from wherever it is.
+  let t = 0
+  let target = 0
+  let last = 0
+  let frame = 0
+  const tick = (now) => {
+    const dt = Math.min(64, now - (last || now))
+    last = now
+    t = target > t ? Math.min(1, t + dt / 1400) : Math.max(0, t - dt / 900)
+    draw(gape(t))
+    frame = t === target ? 0 : requestAnimationFrame(tick)
+  }
+
   const toggle = () => {
     const scary = !masthead.classList.contains("is-scary")
-    const apply = () => {
-      masthead.classList.toggle("is-scary", scary)
-      eye.setAttribute("aria-pressed", String(scary))
-      eye.setAttribute("aria-label", scary ? "Close the sun's third eye" : "Touch the sun's third eye")
+    masthead.classList.toggle("is-scary", scary)
+    eye.setAttribute("aria-pressed", String(scary))
+    eye.setAttribute("aria-label", scary ? "Close the sun's third eye" : "Touch the sun's third eye")
+    target = scary ? 1 : 0
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      cancelAnimationFrame(frame)
+      frame = 0
+      draw((t = target))
+    } else if (!frame) {
+      last = 0
+      frame = requestAnimationFrame(tick)
     }
-    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches
-    if (document.startViewTransition && !reduce) {
-      document.documentElement.dataset.vt = scary ? "open" : "close"
-      document.startViewTransition(apply).finished.finally(() => delete document.documentElement.dataset.vt)
-    } else apply()
   }
   eye.addEventListener("click", toggle)
   eye.addEventListener("keydown", (e) => {
@@ -126,7 +201,9 @@ function mountSun(host) {
   })
 }
 
+/** Fallback for browsers without scroll-driven animations; the CSS does it on its own where they exist. */
 function parallax(masthead) {
+  if (CSS.supports("animation-timeline: scroll()")) return
   const reduce = matchMedia("(prefers-reduced-motion: reduce)")
   let queued = false
   const update = () => {
