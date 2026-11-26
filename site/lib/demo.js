@@ -9,20 +9,20 @@ import * as S from "./scenarios.js"
 // answers the page suggests: `suggest` prefills the person's form, `modelAnswers` scripts the model.
 const DEMOS = {
   mrtr: {
-    title: "Ask the client",
-    sub: "MRTR elicitation",
+    title: "Get answers",
+    sub: "MCP elicitation",
     responder: "client",
     variants: [S.ouija],
   },
   rewind: {
-    title: "Rewind on catch",
+    title: "Can't stop, won't stop",
     sub: "try/catch checkpoints",
     responder: "client",
     variants: [S.tarot],
   },
   missing: {
     title: "Down the rabbit hole",
-    sub: "the model writes what's missing",
+    sub: "don't bore me with implementation details",
     responder: "model",
     variants: [S.alice],
   },
