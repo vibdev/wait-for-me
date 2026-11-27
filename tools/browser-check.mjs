@@ -52,7 +52,12 @@ const frog = page.locator(".frog").first()
 await frog.scrollIntoViewIfNeeded()
 await page.mouse.move(0, 0)
 await page.waitForTimeout(600)
-const tongue = () => frog.locator(".frog__lick").first().evaluate((el) => getComputedStyle(el).strokeDashoffset)
+// Hidden at rest (Chrome used to paint a round-capped dot at the fly end), visible when hovered.
+const tongue = () =>
+  frog.locator(".frog__tongue").evaluate((el) => {
+    const s = getComputedStyle(el)
+    return `${s.visibility}, dashoffset ${getComputedStyle(el.querySelector(".frog__lick")).strokeDashoffset}`
+  })
 console.log("frog tongue at rest:", await tongue())
 await frog.screenshot({ path: out + "frog-rest.png" })
 await frog.hover()

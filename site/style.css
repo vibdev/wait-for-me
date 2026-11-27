@@ -439,7 +439,7 @@ h2 {
   border-left: 4px solid var(--teal);
   padding-left: 14px;
 }
-/* Section divider: a frog. Its tongue unrolls when it scrolls into view, and again on hover. */
+/* Section divider: a frog. Its tongue unrolls on hover (or a tap on touch screens). */
 .frog {
   width: min(372px, 92%);
   aspect-ratio: 372 / 92;
@@ -451,10 +451,22 @@ h2 {
   height: 100%;
   overflow: visible;
 }
+/* Rolled up, the dash sits wholly off both ends of the path. Parked exactly at the end, it leaves a zero-length
+   piece there, and Chrome still draws its round caps: a ball floating under the fly. The tongue is also hidden
+   once it has finished rolling back in. */
+.frog__tongue {
+  visibility: hidden;
+  transition: visibility 0s 0.4s;
+}
 .frog__lick {
-  stroke-dasharray: 1 1;
-  stroke-dashoffset: 1;
+  stroke-dasharray: 1 1.2;
+  stroke-dashoffset: 1.05;
   transition: stroke-dashoffset 0.35s ease-in;
+}
+.frog:hover .frog__tongue,
+.frog.is-licking .frog__tongue {
+  visibility: visible;
+  transition-delay: 0s;
 }
 .frog:hover .frog__lick,
 .frog.is-licking .frog__lick {
